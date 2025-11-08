@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Web App - Home</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="index.html" class="logo">🍔 Billing App</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="manage-items.html">Manage Items</a></li>
+            <li><a href="invoice-history.html">Invoice History</a></li>
+            <li>
+                <a href="cart.html" class="cart-link">
+                    🛒 Cart
+                    <span id="cart-badge" class="badge"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="page-title">Menu Items</h1>
+        <div id="menu-grid" class="menu-grid">
+            <!-- Menu items will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Load and display menu items
+        function loadMenuItems() {
+            const menuItems = getMenuItems();
+            const grid = document.getElementById('menu-grid');
+            
+            if (menuItems.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h2>No menu items available</h2><p>Add items from the Manage Items page</p></div>';
+                return;
+            }
+
+            grid.innerHTML = menuItems.map(item => `
+                <div class="menu-item-card">
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                    <div class="card-content">
+                        <h3>${item.name}</h3>
+                        <div class="price">$${item.price.toFixed(2)}</div>
+                        <button class="btn btn-primary add-to-cart-btn" onclick="handleAddToCart('${item.id}')">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Handle add to cart
+        function handleAddToCart(itemId) {
+            addToCart(itemId);
+            
+            // Show feedback
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Added!';
+            btn.disabled = true;
+            btn.style.backgroundColor = 'var(--success)';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.style.backgroundColor = '';
+            }, 1000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavigation();
+            loadMenuItems();
+        });
+    </script>
+</body>
+</html>
+

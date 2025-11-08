@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Web App - Cart</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="index.html" class="logo">🍔 Billing App</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="manage-items.html">Manage Items</a></li>
+            <li><a href="invoice-history.html">Invoice History</a></li>
+            <li>
+                <a href="cart.html" class="cart-link">
+                    🛒 Cart
+                    <span id="cart-badge" class="badge"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="page-title">Shopping Cart</h1>
+        
+        <div id="cart-content">
+            <!-- Cart content will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Load and display cart
+        function loadCart() {
+            const cart = getCart();
+            const cartContent = document.getElementById('cart-content');
+
+            if (cart.length === 0) {
+                cartContent.innerHTML = `
+                    <div class="empty-state">
+                        <h2>Your cart is empty</h2>
+                        <p>Add items from the home page to get started</p>
+                        <a href="index.html" class="btn btn-primary" style="margin-top: 1rem;">Browse Menu</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Subtotal</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            cart.forEach(item => {
+                const subtotal = item.price * item.qty;
+                html += `
+                    <tr>
+                        <td><img src="${item.image}" alt="${item.name}" class="table-image" onerror="this.src='https://via.placeholder.com/60?text=No+Image'"></td>
+                        <td>${item.name}</td>
+                        <td>$${item.price.toFixed(2)}</td>
+                        <td>
+                            <div class="quantity-controls">
+                                <button class="btn btn-icon btn-secondary" onclick="updateQuantity('${item.id}', ${item.qty - 1})">-</button>
+                                <input type="number" value="${item.qty}" min="1" onchange="updateQuantity('${item.id}', parseInt(this.value))">
+                                <button class="btn btn-icon btn-secondary" onclick="updateQuantity('${item.id}', ${item.qty + 1})">+</button>
+                            </div>
+                        </td>
+                        <td>$${subtotal.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-danger btn-small" onclick="removeItem('${item.id}')">Remove</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            const total = calculateCartTotal();
+            html += `
+                <div class="cart-summary">
+                    <div class="total">Total: $${total.toFixed(2)}</div>
+                    <div class="cart-actions">
+                        <button class="btn btn-secondary" onclick="clearCartItems()">Clear Cart</button>
+                        <button class="btn btn-primary" onclick="payNow()">Pay Now</button>
+                    </div>
+                </div>
+            `;
+
+            cartContent.innerHTML = html;
+        }
+
+        // Update quantity
+        function updateQuantity(itemId, qty) {
+            if (qty < 1) {
+                removeItem(itemId);
+                return;
+            }
+            updateCartQuantity(itemId, qty);
+            loadCart();
+        }
+
+        // Remove item
+        function removeItem(itemId) {
+            if (confirm('Are you sure you want to remove this item?')) {
+                removeFromCart(itemId);
+                loadCart();
+            }
+        }
+
+        // Clear cart
+        function clearCartItems() {
+            if (confirm('Are you sure you want to clear the entire cart?')) {
+                clearCart();
+                loadCart();
+            }
+        }
+
+        // Pay now
+        function payNow() {
+            const cart = getCart();
+            if (cart.length === 0) {
+                alert('Cart is empty!');
+                return;
+            }
+
+            // Create invoice
+            const invoice = createInvoice(cart);
+            
+            // Clear cart
+            clearCart();
+            
+            // Redirect to invoice page
+            window.location.href = `invoice.html?id=${invoice.id}`;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavigation();
+            loadCart();
+        });
+    </script>
+</body>
+</html>
+

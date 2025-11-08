@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Web App - Invoice History</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="index.html" class="logo">🍔 Billing App</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="manage-items.html">Manage Items</a></li>
+            <li><a href="invoice-history.html">Invoice History</a></li>
+            <li>
+                <a href="cart.html" class="cart-link">
+                    🛒 Cart
+                    <span id="cart-badge" class="badge"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="page-title">Invoice History</h1>
+        
+        <div id="invoices-content">
+            <!-- Invoices table will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Load and display invoices
+        function loadInvoices() {
+            const invoices = getInvoices();
+            const content = document.getElementById('invoices-content');
+
+            if (invoices.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No invoices yet</h2>
+                        <p>Complete a purchase to generate your first invoice</p>
+                        <a href="index.html" class="btn btn-primary" style="margin-top: 1rem;">Browse Menu</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date (newest first)
+            const sortedInvoices = invoices.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            let html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            sortedInvoices.forEach(invoice => {
+                html += `
+                    <tr onclick="viewInvoice('${invoice.id}')" style="cursor: pointer;">
+                        <td>${invoice.id}</td>
+                        <td>${formatDate(invoice.date)}</td>
+                        <td>$${invoice.total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            content.innerHTML = html;
+        }
+
+        // View invoice
+        function viewInvoice(id) {
+            window.location.href = `invoice.html?id=${id}`;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavigation();
+            loadInvoices();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Web App - Invoice</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="index.html" class="logo">🍔 Billing App</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="manage-items.html">Manage Items</a></li>
+            <li><a href="invoice-history.html">Invoice History</a></li>
+            <li>
+                <a href="cart.html" class="cart-link">
+                    🛒 Cart
+                    <span id="cart-badge" class="badge"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div id="invoice-container">
+            <!-- Invoice content will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Make jsPDF available globally for app.js
+        window.jsPDF = window.jspdf?.jsPDF || window.jsPDF;
+        // Load and display invoice
+        function loadInvoice() {
+            // Get invoice ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const invoiceId = urlParams.get('id');
+
+            if (!invoiceId) {
+                document.getElementById('invoice-container').innerHTML = `
+                    <div class="empty-state">
+                        <h2>Invoice not found</h2>
+                        <p>No invoice ID provided</p>
+                        <a href="invoice-history.html" class="btn btn-primary" style="margin-top: 1rem;">Back to History</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const invoice = getInvoiceById(invoiceId);
+
+            if (!invoice) {
+                document.getElementById('invoice-container').innerHTML = `
+                    <div class="empty-state">
+                        <h2>Invoice not found</h2>
+                        <p>Invoice #${invoiceId} does not exist</p>
+                        <a href="invoice-history.html" class="btn btn-primary" style="margin-top: 1rem;">Back to History</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="invoice-container">
+                    <div class="invoice-header">
+                        <h1>INVOICE</h1>
+                    </div>
+                    
+                    <div class="invoice-info">
+                        <div>
+                            <strong>Invoice #</strong>
+                            <div>${invoice.id}</div>
+                        </div>
+                        <div>
+                            <strong>Date</strong>
+                            <div>${formatDate(invoice.date)}</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            invoice.items.forEach(item => {
+                const subtotal = item.price * item.qty;
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.qty}</td>
+                        <td>$${item.price.toFixed(2)}</td>
+                        <td>$${subtotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 2rem; font-size: 1.5rem; font-weight: bold; color: var(--accent);">
+                        Total: $${invoice.total.toFixed(2)}
+                    </div>
+
+                    <div class="invoice-actions">
+                        <button class="btn btn-secondary" onclick="window.location.href='invoice-history.html'">Back to History</button>
+                        <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('invoice-container').innerHTML = html;
+            
+            // Store invoice for PDF generation
+            window.currentInvoice = invoice;
+        }
+
+        // Download PDF
+        function downloadPDF() {
+            if (!window.currentInvoice) {
+                alert('Invoice data not available');
+                return;
+            }
+            generatePDF(window.currentInvoice);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavigation();
+            loadInvoice();
+        });
+    </script>
+</body>
+</html>
+
