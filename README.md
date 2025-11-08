@@ -2,6 +2,10 @@
 
 A complete billing and ordering web application built with vanilla HTML, CSS, and JavaScript. No frameworks, no Node.js, no build tools - just pure web technologies with LocalStorage for data persistence.
 
+# Hosting
+hosted the wbsite using vercel.app for free
+DIRECT URL : af-billing.vercel.app
+
 ## Features
 
 ### 🏠 Home Page (index.html)
@@ -259,4 +263,5 @@ For issues or questions, please open an issue on the repository.
 ---
 
 **Built with ❤️ using vanilla HTML, CSS, and JavaScript**
+
 
